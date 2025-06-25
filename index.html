@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Single Pay Solution - Estimate & Invoice</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            margin: 0;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 220px;
+            height: 100vh;
+            background: #23272b;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        .sidebar .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            padding: 24px 0 18px 32px;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+        .sidebar nav {
+            flex: 1;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar li {
+            padding: 12px 0 12px 32px;
+            cursor: pointer;
+            color: #cfd8dc;
+            font-size: 1rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .sidebar li.active, .sidebar li:hover {
+            background: #2e7d32;
+            color: #fff;
+        }
+        .sidebar .bottom {
+            margin-top: auto;
+            padding-bottom: 18px;
+        }
+        .sidebar .bottom li {
+            font-size: 0.95rem;
+            color: #b0bec5;
+        }
+        .main-content {
+            margin-left: 220px;
+            padding: 40px 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 32px 28px 24px 28px;
+            margin-bottom: 40px;
+        }
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .header-row h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .header-row .status {
+            font-size: 0.95rem;
+            color: #888;
+            background: #f0f3f5;
+            border-radius: 6px;
+            padding: 3px 10px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .actions button, .actions input[type="button"] {
+            background: #fff;
+            border: 1px solid #b0bec5;
+            color: #2c3e50;
+            border-radius: 6px;
+            padding: 7px 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, border 0.2s;
+        }
+        .actions button.primary {
+            background: #2e7d32;
+            color: #fff;
+            border: none;
+        }
+        .actions button.primary:hover {
+            background: #256025;
+        }
+        .actions button:hover, .actions input[type="button"]:hover {
+            background: #f0f3f5;
+        }
+        .invoice-section {
+            margin-bottom: 30px;
+        }
+        .flex-row {
+            display: flex;
+            gap: 18px;
+        }
+        .flex-col {
+            flex: 1;
+        }
+        .upload-box {
+            border: 2px dashed #b0bec5;
+            border-radius: 8px;
+            background: #fafbfc;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .upload-box input[type="file"] {
+            display: none;
+        }
+        .upload-box label {
+            color: #3498db;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .upload-box .desc {
+            color: #888;
+            font-size: 0.95rem;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            margin-top: 18px;
+        }
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .form-col {
+            flex: 1;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            font-size: 0.97rem;
+            color: #34495e;
+            margin-bottom: 3px;
+            display: block;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccd3da;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-bottom: 0;
+            box-sizing: border-box;
+        }
+        .currency-row {
+            display: flex;
+            gap: 10px;
+        }
+        .currency-row select, .currency-row input {
+            flex: 1;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #e0e0e0;
+            padding: 8px 6px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background: #f0f3f5;
+            color: #34495e;
+        }
+        .add-line-btn {
+            background: #fff;
+            color: #3498db;
+            border: 1px dashed #3498db;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 30px;
+            margin-top: 10px;
+        }
+        .summary-label {
+            color: #888;
+        }
+        .summary-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .notes-section, .terms-section {
+            margin-top: 18px;
+        }
+        .attachments-section {
+            margin-top: 18px;
+        }
+        .attachments-box {
+            border: 2px dashed #b0bec5;
+            border-radius: 8px;
+            background: #fafbfc;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0;
+        }
+        .attachments-box label {
+            color: #3498db;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .attachments-box .desc {
+            color: #888;
+            font-size: 0.95rem;
+        }
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 60px;
+            }
+            .main-content {
+                margin-left: 60px;
+            }
+            .container {
+                width: 98vw;
+                min-width: 0;
+                padding: 10px 2vw;
+            }
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 100vw;
+                padding: 4px 1vw;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="logo">InvoiceML</div>
+    <nav>
+        <ul>
+            <li id="nav-dashboard">Dashboard</li>
+            <li id="nav-invoices">Invoices</li>
+            <li id="nav-estimates" class="active">Estimates</li>
+            <li id="nav-invoice-tracking">Invoice Tracking</li>
+            <li id="nav-clients">Clients</li>
+            <li id="nav-items">Items</li>
+            <li id="nav-expenses">Expenses <span style="background:#2e7d32;color:#fff;border-radius:8px;padding:2px 6px;font-size:0.8em;margin-left:4px;">AI</span></li>
+            <li>Assistant</li>
+            <li style="margin-top:10px;" id="nav-team">Team</li>
+            <li>Accept Payments</li>
+            <li>Login</li>
+            <li>Turn off Invoicer branding</li>
+        </ul>
+    </nav>
+    <ul class="bottom">
+        <li>Settings</li>
+        <li>Team</li>
+        <li>Support</li>
+        <li>Privacy</li>
+        <li>Terms</li>
+    </ul>
+</div>
+<div class="main-content">
+    <!-- Dashboard Template (move to top for z-order and visibility) -->
+    <div class="container" id="dashboard-template" style="display:none;max-width:1200px;width:97vw;background:#fff;border:none;box-shadow:none;padding:0;">
+        <div style="padding:32px 32px 0 32px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <div style="font-size:2rem;font-weight:700;color:#222;">Good evening, Manager</div>
+                    <div style="margin-top:6px;font-size:1.1rem;color:#2e7d32;display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:1.2em;">&#10003;</span>
+                        <span style="color:#444;">Free trial. 14 days remaining.</span>
+                        <a href="#" style="color:#1976d2;font-weight:600;margin-left:8px;">Upgrade now and save.</a>
+                    </div>
+                </div>
+                <div style="display:flex;gap:12px;">
+                    <button style="background:#14c38e;color:#fff;font-size:1.1rem;font-weight:700;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;"><span style="font-size:1.2em;">&#128196;</span> New Invoice</button>
+                    <button style="background:#14c38e;color:#fff;font-size:1.1rem;font-weight:700;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;"><span style="font-size:1.2em;">&#128196;</span> New Estimate</button>
+                    <button style="background:#14c38e;color:#fff;font-size:1.1rem;font-weight:700;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;"><span style="font-size:1.2em;">&#10133;</span> Add Client</button>
+                </div>
+            </div>
+            <div style="margin-top:32px;display:flex;align-items:center;gap:18px;">
+                <div style="font-size:1.2rem;font-weight:600;color:#222;">Overview</div>
+                <button style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:10px 22px;font-size:1.1rem;color:#222;display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;">
+                    <span style="font-size:1.2em;">&#128197;</span> Last 30 Days <span style="font-size:1.1em;">&#9660;</span>
+                </button>
+            </div>
+            <div style="display:flex;gap:24px;margin-top:18px;">
+                <div style="flex:1;background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);padding:24px 0 0 0;display:flex;flex-direction:column;align-items:center;">
+                    <div style="font-size:2.2rem;margin-bottom:8px;">&#128196;</div>
+                    <div style="font-size:1.2rem;font-weight:600;">Invoiced</div>
+                    <a href="#" style="margin-top:24px;display:block;width:100%;text-align:center;padding:14px 0 14px 0;border-top:1px solid #f0f0f0;color:#1976d2;font-weight:600;text-decoration:none;">View invoiced</a>
+                </div>
+                <div style="flex:1;background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);padding:24px 0 0 0;display:flex;flex-direction:column;align-items:center;">
+                    <div style="font-size:2.2rem;margin-bottom:8px;">&#36;</div>
+                    <div style="font-size:1.2rem;font-weight:600;">Owing</div>
+                    <a href="#" style="margin-top:24px;display:block;width:100%;text-align:center;padding:14px 0 14px 0;border-top:1px solid #f0f0f0;color:#1976d2;font-weight:600;text-decoration:none;">View owing</a>
+                </div>
+                <div style="flex:1;background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);padding:24px 0 0 0;display:flex;flex-direction:column;align-items:center;">
+                    <div style="font-size:2.2rem;margin-bottom:8px;">&#128340;</div>
+                    <div style="font-size:1.2rem;font-weight:600;">Overdue</div>
+                    <a href="#" style="margin-top:24px;display:block;width:100%;text-align:center;padding:14px 0 14px 0;border-top:1px solid #f0f0f0;color:#1976d2;font-weight:600;text-decoration:none;">View overdue</a>
+                </div>
+            </div>
+            <div style="display:flex;gap:32px;margin-top:40px;">
+                <div style="flex:2;">
+                    <div style="font-size:1.25rem;font-weight:700;margin-bottom:10px;">Recent Invoices</div>
+                    <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);overflow:hidden;">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead style="background:#f3f4f6;">
+                                <tr>
+                                    <th style="text-align:left;padding:14px 0 14px 18px;font-size:1.08rem;color:#222;font-weight:700;">Number</th>
+                                    <th style="text-align:left;padding:14px 0;font-size:1.08rem;color:#222;font-weight:700;">Client</th>
+                                    <th style="text-align:left;padding:14px 0;font-size:1.08rem;color:#222;font-weight:700;">Status</th>
+                                    <th style="text-align:left;padding:14px 0;font-size:1.08rem;color:#222;font-weight:700;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="text-align:center;padding:32px 0;color:#888;font-size:1.1rem;">You have no invoices, <a href="#" style="color:#1976d2;font-weight:600;">create an invoice</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:1.25rem;font-weight:700;margin-bottom:10px;">Recent Estimates</div>
+                    <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);overflow:hidden;">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead style="background:#f3f4f6;">
+                                <tr>
+                                    <th style="text-align:left;padding:14px 0 14px 18px;font-size:1.08rem;color:#222;font-weight:700;">Number</th>
+                                    <th style="text-align:left;padding:14px 0;font-size:1.08rem;color:#222;font-weight:700;">Client</th>
+                                    <th style="text-align:left;padding:14px 0;font-size:1.08rem;color:#222;font-weight:700;">Status</th>
+                                    <th style="text-align:left;padding:14px 0;font-size:1.08rem;color:#222;font-weight:700;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding-left:18px;"><a href="#" style="color:#1976d2;font-weight:600;">EST-00002</a></td>
+                                    <td></td>
+                                    <td><span style="background:#f3f4f6;color:#444;padding:4px 14px;border-radius:8px;font-size:1.01rem;font-weight:600;">Created</span></td>
+                                    <td>$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left:18px;"><a href="#" style="color:#1976d2;font-weight:600;">EST-00001</a></td>
+                                    <td></td>
+                                    <td><span style="background:#f3f4f6;color:#444;padding:4px 14px;border-radius:8px;font-size:1.01rem;font-weight:600;">Created</span></td>
+                                    <td>$0.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:40px;">
+                <div style="font-size:1.25rem;font-weight:700;margin-bottom:10px;">Recent activity</div>
+                <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);overflow:hidden;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead style="background:#f3f4f6;">
+                            <tr>
+                                <th style="text-align:left;padding:14px 0 14px 18px;font-size:1.08rem;color:#222;font-weight:700;">Event</th>
+                                <th style="text-align:left;padding:14px 0;font-size:1.08rem;color:#222;font-weight:700;">Description</th>
+                                <th style="text-align:left;padding:14px 0;font-size:1.08rem;color:#222;font-weight:700;">Document</th>
+                                <th style="text-align:left;padding:14px 0;font-size:1.08rem;color:#222;font-weight:700;">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="text-align:center;padding:32px 0;color:#888;font-size:1.1rem;">You have no recent activities</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- AI Assistant Panel -->
+    <div class="container" id="ai-assistant-panel" style="max-width:420px;width:100%;margin-bottom:32px;background:#fff;border:1px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,0.07);padding:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px 8px 18px;border-bottom:1px solid #f0f0f0;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-weight:700;font-size:1.15rem;">AI Assistant</span>
+                <span style="font-size:1.2em;color:#888;cursor:pointer;">&#9881;</span>
+            </div>
+            <span style="font-size:1.3em;color:#888;cursor:pointer;">&times;</span>
+        </div>
+        <div style="padding:0 18px 0 18px;">
+            <div style="font-size:0.98rem;color:#888;margin:8px 0 2px 0;">Total tokens used: <span style="color:#222;font-weight:600;">96198</span> / 1000000</div>
+            <div style="background:#f0f3f5;border-radius:6px;height:8px;width:100%;margin-bottom:10px;">
+                <div style="background:#2e7d32;height:8px;border-radius:6px;width:10%;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <input id="ai-assistant-input" type="text" placeholder="Enter your question" style="flex:1;padding:10px 12px;font-size:1.05rem;border:1px solid #e0e0e0;border-radius:6px;outline:none;" />
+                <button id="ai-assistant-submit" style="background:#14c38e;color:#fff;font-weight:700;font-size:1.05rem;padding:10px 18px;border:none;border-radius:6px;cursor:pointer;">Submit</button>
+            </div>
+            <div style="font-size:1.05rem;font-weight:600;color:#1976d2;cursor:pointer;margin-bottom:6px;" onclick="document.getElementById('ai-assistant-example-questions').style.display = (document.getElementById('ai-assistant-example-questions').style.display === 'none' ? '' : 'none')">&#9660; Example questions</div>
+            <div id="ai-assistant-example-questions" style="display:block;margin-bottom:10px;">
+                <div style="color:#444;font-size:1.01rem;margin-bottom:8px;">Here are common questions you can ask the AI Assistant.<br>Click any question to use it as your prompt:</div>
+                <div style="border-left:3px solid #e0e0e0;padding-left:12px;">
+                    <div style="margin-bottom:4px;"><a href="#" style="color:#1976d2;text-decoration:none;cursor:pointer;" onclick="document.getElementById('ai-assistant-input').value='Show me overdue invoices from the last 3 months'">Show me overdue invoices from the last 3 months</a></div>
+                    <div style="margin-bottom:4px;"><a href="#" style="color:#1976d2;text-decoration:none;cursor:pointer;" onclick="document.getElementById('ai-assistant-input').value='What\'s my total revenue for this quarter?'">What's my total revenue for this quarter?</a></div>
+                    <div style="margin-bottom:4px;"><a href="#" style="color:#1976d2;text-decoration:none;cursor:pointer;" onclick="document.getElementById('ai-assistant-input').value='Which clients haven\'t paid their invoices?'">Which clients haven't paid their invoices?</a></div>
+                    <div style="margin-bottom:4px;"><a href="#" style="color:#1976d2;text-decoration:none;cursor:pointer;" onclick="document.getElementById('ai-assistant-input').value='Analyze my monthly expenses trend'">Analyze my monthly expenses trend</a></div>
+                    <div style="margin-bottom:4px;"><a href="#" style="color:#1976d2;text-decoration:none;cursor:pointer;" onclick="document.getElementById('ai-assistant-input').value='New example question'">New example question</a></div>
+                    <div style="margin-bottom:4px;"><a href="#" style="color:#1976d2;text-decoration:none;cursor:pointer;" onclick="document.getElementById('ai-assistant-input').value='What\'s my average time to payment for invoices?'">What's my average time to payment for invoices?</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Estimate Template -->
+    <div class="container" id="estimate-template">
+        <div class="header-row">
+            <h2>Estimate EST-00001 <span class="status">Created</span></h2>
+            <div class="actions">
+                <button>View</button>
+                <button>PDF</button>
+                <button>Send</button>
+                <button>Approve</button>
+                <button>Generate Invoice</button>
+            </div>
+        </div>
+        <div class="invoice-section">
+            <div class="upload-box">
+                <label for="upload-logo-estimate">Upload a file</label>
+                <input type="file" id="upload-logo-estimate" />
+                <div class="desc">or drag and drop<br><span style="color:#888;font-size:0.9em;">Optional</span></div>
+            </div>
+            <div class="flex-row">
+                <div class="flex-col" style="flex:1.2;">
+                    <div class="section-title">From</div>
+                    <div class="form-group"><input type="text" placeholder="Company Name"></div>
+                    <div class="form-group"><input type="text" placeholder="Address 1"></div>
+                    <div class="form-group"><input type="text" placeholder="Address 2"></div>
+                    <div class="form-group"><input type="text" placeholder="City"></div>
+                    <div class="form-group"><input type="text" placeholder="State/Province"></div>
+                    <div class="form-group">
+                        <select><option>🇺🇸 United States</option></select>
+                    </div>
+                    <div class="form-group"><input type="text" placeholder="Zip/Postal"></div>
+                    <div class="form-group"><input type="text" placeholder="Phone"></div>
+                    <div class="form-group"><input type="text" placeholder="Info"></div>
+                </div>
+                <div class="flex-col" style="flex:1.2;">
+                    <div class="section-title">Billed To</div>
+                    <div class="form-group"><input type="text" placeholder="Type to select or add client"></div>
+                    <div class="form-group"><input type="text" placeholder="Address 1"></div>
+                    <div class="form-group"><input type="text" placeholder="Address 2"></div>
+                    <div class="form-group"><input type="text" placeholder="City"></div>
+                    <div class="form-group"><input type="text" placeholder="State/Province"></div>
+                    <div class="form-group">
+                        <select><option>🇺🇸 United States</option></select>
+                    </div>
+                    <div class="form-group"><input type="text" placeholder="Zip/Postal"></div>
+                    <div class="form-group"><input type="text" placeholder="Phone"></div>
+                    <div class="form-group"><input type="text" placeholder="Info"></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Date Issued</label>
+                    <input type="date" value="2025-06-25">
+                </div>
+                <div class="form-col">
+                    <label>Date Due</label>
+                    <input type="date" value="2025-07-25">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Currency</label>
+                    <select><option>USD $ - United States Dollar</option></select>
+                </div>
+                <div class="form-col">
+                    <label>PDF Language</label>
+                    <select><option>English</option></select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Estimate Number</label>
+                    <input type="text" value="EST-00001">
+                </div>
+                <div class="form-col">
+                    <label>Reference #</label>
+                    <input type="text" placeholder="Enter value (eg PO#)">
+                </div>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Amount</span>
+                <span class="summary-value">$0.00</span>
+            </div>
+            <div class="section-title" style="margin-top:24px;">Line Items</div>
+            <table class="invoice-table">
+                <thead>
+                    <tr><th>Item</th><th>Rate</th><th>Qty</th><th>Line Total</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" placeholder="Item name"></td>
+                        <td><input type="number" value="0.00" min="0" step="0.01"></td>
+                        <td><input type="number" value="1" min="1" step="1"></td>
+                        <td>$0.00</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"><input type="text" placeholder="Item description"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="add-line-btn">+ Add line item</button>
+            <div class="summary-row">
+                <span class="summary-label">Subtotal</span>
+                <span class="summary-value">$0.00</span>
+                <a href="#" style="margin-left:20px;font-size:0.95em;color:#3498db;text-decoration:underline;">Add shipping cost</a>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Total</span>
+                <span class="summary-value">$0.00</span>
+                <a href="#" style="margin-left:20px;font-size:0.95em;color:#3498db;text-decoration:underline;">Add discount</a>
+                <a href="#" style="margin-left:10px;font-size:0.95em;color:#3498db;text-decoration:underline;">Add tax</a>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Amount</span>
+                <span class="summary-value">$0.00</span>
+            </div>
+        </div>
+        <div class="notes-section">
+            <label>Notes</label>
+            <textarea placeholder="Notes or payment details (optional)"></textarea>
+        </div>
+        <div class="terms-section">
+            <label>Terms</label>
+            <textarea placeholder="Terms and conditions."></textarea>
+        </div>
+        <div class="attachments-section">
+            <div class="attachments-box">
+                <label for="upload-attachment-estimate">Upload a file</label>
+                <input type="file" id="upload-attachment-estimate" />
+                <div class="desc">PDF, JPG, PNG, TXT, DOC up to 20MB</div>
+            </div>
+        </div>
+        <div class="actions" style="margin-top:24px;">
+            <button>View</button>
+            <button>PDF</button>
+            <button>Send</button>
+            <button>Approve</button>
+            <button>Generate Invoice</button>
+        </div>
+    </div>
+    <!-- Invoice Template -->
+    <div class="container" id="invoice-template" style="display:none;">
+        <div class="header-row">
+            <h2>Invoice INV-00001 <span class="status">Created</span></h2>
+            <div class="actions">
+                <button>View</button>
+                <button>PDF</button>
+                <button>Send</button>
+            </div>
+        </div>
+        <div class="invoice-section">
+            <div class="upload-box">
+                <label for="upload-logo-invoice">Upload a file</label>
+                <input type="file" id="upload-logo-invoice" />
+                <div class="desc">or drag and drop<br><span style="color:#888;font-size:0.9em;">Optional</span></div>
+            </div>
+            <div class="flex-row">
+                <div class="flex-col" style="flex:1.2;">
+                    <div class="section-title">From</div>
+                    <div class="form-group"><input type="text" placeholder="Company Name"></div>
+                    <div class="form-group"><input type="text" placeholder="Address 1"></div>
+                    <div class="form-group"><input type="text" placeholder="Address 2"></div>
+                    <div class="form-group"><input type="text" placeholder="City"></div>
+                    <div class="form-group"><input type="text" placeholder="State/Province"></div>
+                    <div class="form-group">
+                        <select><option>🇺🇸 United States</option></select>
+                    </div>
+                    <div class="form-group"><input type="text" placeholder="Zip/Postal"></div>
+                    <div class="form-group"><input type="text" placeholder="Phone"></div>
+                    <div class="form-group"><input type="text" placeholder="Info"></div>
+                </div>
+                <div class="flex-col" style="flex:1.2;">
+                    <div class="section-title">Billed To</div>
+                    <div class="form-group"><input type="text" placeholder="Type to select or add client"></div>
+                    <div class="form-group"><input type="text" placeholder="Address 1"></div>
+                    <div class="form-group"><input type="text" placeholder="Address 2"></div>
+                    <div class="form-group"><input type="text" placeholder="City"></div>
+                    <div class="form-group"><input type="text" placeholder="State/Province"></div>
+                    <div class="form-group">
+                        <select><option>🇺🇸 United States</option></select>
+                    </div>
+                    <div class="form-group"><input type="text" placeholder="Zip/Postal"></div>
+                    <div class="form-group"><input type="text" placeholder="Phone"></div>
+                    <div class="form-group"><input type="text" placeholder="Info"></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Date Issued</label>
+                    <input type="date" value="2025-06-25">
+                </div>
+                <div class="form-col">
+                    <label>Date Due</label>
+                    <input type="date" value="2025-07-25">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Currency</label>
+                    <select><option>USD $ - United States Dollar</option></select>
+                </div>
+                <div class="form-col">
+                    <label>PDF Language</label>
+                    <select><option>English</option></select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Invoice Number</label>
+                    <input type="text" value="INV-00001">
+                </div>
+                <div class="form-col">
+                    <label>Reference #</label>
+                    <input type="text" placeholder="Enter value (eg PO#)">
+                </div>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Amount Due</span>
+                <span class="summary-value">$0.00</span>
+            </div>
+            <div class="section-title" style="margin-top:24px;">Line Items</div>
+            <table class="invoice-table">
+                <thead>
+                    <tr><th>Item</th><th>Rate</th><th>Qty</th><th>Line Total</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" placeholder="Item name"></td>
+                        <td><input type="number" value="0.00" min="0" step="0.01"></td>
+                        <td><input type="number" value="1" min="1" step="1"></td>
+                        <td>$0.00</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"><input type="text" placeholder="Item description"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="add-line-btn">+ Add line item</button>
+            <div class="summary-row">
+                <span class="summary-label">Subtotal</span>
+                <span class="summary-value">$0.00</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Total</span>
+                <span class="summary-value">$0.00</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Amount Due</span>
+                <span class="summary-value">$0.00</span>
+            </div>
+        </div>
+        <div class="notes-section">
+            <label>Notes</label>
+            <textarea placeholder="Notes or payment details (optional)"></textarea>
+        </div>
+        <div class="terms-section">
+            <label>Terms</label>
+            <textarea placeholder="Terms and conditions."></textarea>
+        </div>
+        <div class="attachments-section">
+            <div class="attachments-box">
+                <label for="upload-attachment-invoice">Upload a file</label>
+                <input type="file" id="upload-attachment-invoice" />
+                <div class="desc">PDF, JPG, PNG, TXT, DOC up to 20MB</div>
+            </div>
+        </div>
+        <div class="actions" style="margin-top:24px;">
+            <button>View</button>
+            <button>PDF</button>
+            <button>Send</button>
+        </div>
+    </div>
+    <!-- Clients Template -->
+    <div class="container" id="clients-template" style="display:none;max-width:1100px;width:90vw;">
+        <div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;gap:12px;">
+                <button id="clients-tab-all" style="background:#d3d7dd;color:#444;font-weight:700;border:none;padding:16px 48px 16px 48px;border-radius:8px 8px 0 0;font-size:1.1rem;outline:none;">All</button>
+                <button id="clients-tab-archived" style="background:#f6f7f8;color:#888;font-weight:600;border:none;padding:16px 48px 16px 48px;border-radius:8px 8px 0 0;font-size:1.1rem;outline:none;">Archived</button>
+            </div>
+            <div style="display:flex;gap:0;align-items:center;">
+                <button style="background:#fff;border:1px solid #e0e0e0;border-radius:8px 0 0 8px;padding:12px 28px 12px 40px;font-size:1.1rem;color:#2c3e50;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <span style="font-size:1.2em;vertical-align:middle;">&#8681;</span> Download Clients
+                </button>
+                <button style="background:#fff;border:1px solid #e0e0e0;border-left:none;border-radius:0 8px 8px 0;padding:12px 18px;font-size:1.2rem;color:#2c3e50;cursor:pointer;">
+                    <span style="font-size:1.2em;">&#9881;</span>
+                </button>
+            </div>
+        </div>
+        <div style="margin-bottom:32px;">
+            <input type="text" placeholder="Search..." style="width:100%;padding:18px 18px 18px 18px;font-size:1.3rem;border:1px solid #e0e0e0;border-radius:8px;background:#fff;color:#888;outline:none;">
+        </div>
+        <div style="text-align:center;margin:48px 0 32px 0;">
+            <span style="font-size:1.3rem;font-style:italic;color:#111;font-weight:500;">No records available</span>
+        </div>
+        <div style="margin:0 auto 0 auto;max-width:1000px;">
+            <button style="width:100%;background:#14c38e;color:#fff;font-size:1.3rem;font-weight:700;padding:22px 0;border:none;border-radius:8px;cursor:pointer;">Create a Client</button>
+        </div>
+    </div>
+    <!-- Items Template -->
+    <div class="container" id="items-template" style="display:none;max-width:1200px;width:95vw;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+            <h1 style="font-size:2.2rem;font-weight:700;color:#444;margin:0;">Items <span style="font-size:1.2rem;vertical-align:middle;">&#8597;</span></h1>
+            <button style="background:#14c38e;color:#fff;font-size:1.1rem;font-weight:700;padding:12px 32px;border:none;border-radius:8px;cursor:pointer;">Add Item</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+            <button id="items-tab-all" style="background:#d3d7dd;color:#444;font-weight:700;border:none;padding:12px 32px 12px 32px;border-radius:8px 8px 0 0;font-size:1.1rem;outline:none;">All</button>
+            <button id="items-tab-archived" style="background:#f6f7f8;color:#888;font-weight:600;border:none;padding:12px 32px 12px 32px;border-radius:8px 8px 0 0;font-size:1.1rem;outline:none;">Archived</button>
+        </div>
+        <div style="margin-bottom:18px;">
+            <input type="text" placeholder="Search..." style="width:100%;padding:16px 18px;font-size:1.2rem;border:1px solid #e0e0e0;border-radius:8px;background:#fff;color:#888;outline:none;">
+        </div>
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                    <tr style="background:none;">
+                        <th style="text-align:left;padding:12px 0 12px 0;font-size:1.1rem;color:#222;font-weight:700;min-width:120px;">Name <span style="font-size:1.1em;vertical-align:middle;">&#8597;</span></th>
+                        <th style="text-align:left;padding:12px 0;font-size:1.1rem;color:#222;font-weight:700;min-width:120px;">Category</th>
+                        <th style="text-align:left;padding:12px 0;font-size:1.1rem;color:#222;font-weight:700;min-width:120px;">Subcategory</th>
+                        <th style="text-align:left;padding:12px 0;font-size:1.1rem;color:#222;font-weight:700;min-width:120px;">Price</th>
+                        <th style="text-align:left;padding:12px 0;font-size:1.1rem;color:#222;font-weight:700;min-width:120px;">Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div style="text-align:center;margin:32px 0 32px 0;">
+            <span style="font-size:1.3rem;font-style:italic;color:#111;font-weight:500;">No records available</span>
+        </div>
+        <div style="margin:0 auto 0 auto;max-width:1000px;">
+            <button style="width:100%;background:#14c38e;color:#fff;font-size:1.3rem;font-weight:700;padding:22px 0;border:none;border-radius:8px;cursor:pointer;">Create an Item</button>
+        </div>
+    </div>
+    <!-- Expenses Template -->
+    <div class="container" id="expenses-template" style="display:none;max-width:1200px;width:95vw;">
+        <h1 style="font-size:2.2rem;font-weight:700;color:#444;margin:0 0 18px 0;">Expenses</h1>
+        <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
+            <button id="expenses-tab-all" style="background:#cfd3d6;color:#444;font-weight:700;border:none;padding:16px 48px 16px 48px;border-radius:8px 8px 0 0;font-size:1.1rem;outline:none;">All</button>
+            <button id="expenses-tab-archived" style="background:#f6f7f8;color:#888;font-weight:600;border:none;padding:16px 48px 16px 48px;border-radius:8px 8px 0 0;font-size:1.1rem;outline:none;">Archived</button>
+        </div>
+        <div style="margin-bottom:18px;">
+            <input type="text" placeholder="Search..." style="width:100%;padding:18px 18px 18px 18px;font-size:1.3rem;border:1px solid #e0e0e0;border-radius:8px;background:#fff;color:#888;outline:none;">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span style="color:#888;font-size:1.1rem;font-weight:500;">Sort By</span>
+                <button style="background:#fff;border:1px solid #e0e0e0;border-radius:8px 0 0 8px;padding:12px 24px 12px 24px;font-size:1.1rem;color:#222;display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;">
+                    Expense date <span style="font-size:1.2em;">&#8597;</span>
+                </button>
+                <button style="background:#fff;border:1px solid #e0e0e0;border-left:none;border-radius:0 8px 8px 0;padding:12px 24px;font-size:1.1rem;color:#222;display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;">
+                    <span style="font-size:1.2em;">&#128197;</span> All Time <span style="font-size:1.1em;">&#9660;</span>
+                </button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:8px 16px;font-size:1.3rem;color:#222;cursor:pointer;">
+                    <span style="font-size:1.2em;">&#8801;</span>
+                </button>
+                <button style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:8px 16px;font-size:1.3rem;color:#222;cursor:pointer;">
+                    <span style="font-size:1.2em;">&#9776;</span>
+                </button>
+                <button style="background:#fff;border:1px solid #e0e0e0;border-radius:8px 0 0 8px;padding:12px 24px 12px 24px;font-size:1.1rem;color:#222;display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;">
+                    <span style="font-size:1.2em;">&#8681;</span> Download CSV
+                </button>
+                <button style="background:#fff;border:1px solid #e0e0e0;border-left:none;border-radius:0 8px 8px 0;padding:12px 18px;font-size:1.2rem;color:#2c3e50;cursor:pointer;">
+                    <span style="font-size:1.2em;">&#9881;</span>
+                </button>
+            </div>
+        </div>
+        <div style="text-align:center;margin:48px 0 32px 0;">
+            <span style="font-size:1.3rem;font-style:italic;color:#888;font-weight:500;">No records available</span>
+        </div>
+    </div>
+    <!-- Team Template -->
+    <div class="container" id="team-template" style="display:none;max-width:1200px;width:95vw;">
+        <h1 style="font-size:2.2rem;font-weight:700;color:#444;margin:0 0 8px 0;">Manage your team</h1>
+        <div style="font-size:1.15rem;color:#444;margin-bottom:24px;">Invite people who work with you and define what tasks they can perform with your account.</div>
+        <div style="background:#fff;border:2px solid #e0e0e0;border-radius:12px;display:flex;align-items:stretch;justify-content:space-between;margin-bottom:32px;overflow:hidden;">
+            <div style="flex:1;padding:32px 0 32px 32px;min-width:180px;">
+                <div style="font-size:2.1rem;font-weight:700;">1 of 1</div>
+                <div style="font-size:1.1rem;color:#222;font-weight:600;">Team members used</div>
+                <div style="font-size:1.1rem;color:#0a5cff;font-weight:700;margin-top:4px;cursor:pointer;">Upgrade to add more</div>
+            </div>
+            <div style="width:1px;background:#e0e0e0;margin:0 0;align-self:stretch;"></div>
+            <div style="flex:1;padding:32px 0 32px 32px;min-width:180px;">
+                <div style="font-size:2.1rem;font-weight:700;">0</div>
+                <div style="font-size:1.1rem;color:#222;font-weight:600;">Pending invitations</div>
+            </div>
+            <div style="width:1px;background:#e0e0e0;margin:0 0;align-self:stretch;"></div>
+            <div style="flex:1;padding:32px 0 32px 32px;min-width:180px;">
+                <div style="font-size:2.1rem;font-weight:700;">4</div>
+                <div style="font-size:1.1rem;color:#222;font-weight:600;">Created roles</div>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+            <input type="text" placeholder="Search member" style="width:60%;padding:16px 18px;font-size:1.1rem;border:1px solid #e0e0e0;border-radius:8px;background:#fff;color:#888;outline:none;">
+            <div style="display:flex;gap:16px;">
+                <button style="background:#14c38e;color:#fff;font-size:1.1rem;font-weight:700;padding:14px 32px;border:none;border-radius:8px;cursor:pointer;">Manage Roles</button>
+                <button style="background:#14c38e;color:#fff;font-size:1.1rem;font-weight:700;padding:14px 32px;border:none;border-radius:8px;cursor:pointer;">Invite member</button>
+            </div>
+        </div>
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;">
+                <thead style="background:#f3f4f6;">
+                    <tr>
+                        <th style="text-align:left;padding:16px 0 16px 18px;font-size:1.1rem;color:#222;font-weight:700;min-width:180px;">Members <span style="font-size:1.1em;vertical-align:middle;">&#8597;</span></th>
+                        <th style="text-align:left;padding:16px 0;font-size:1.1rem;color:#222;font-weight:700;min-width:120px;">Role <span style="font-size:1.1em;vertical-align:middle;">&#8597;</span></th>
+                        <th style="text-align:left;padding:16px 0;font-size:1.1rem;color:#222;font-weight:700;min-width:180px;">Creation Date <span style="font-size:1.1em;vertical-align:middle;">&#8597;</span></th>
+                        <th style="text-align:left;padding:16px 0;font-size:1.1rem;color:#222;font-weight:700;min-width:120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background:#fff;">
+                        <td style="padding:18px 0 18px 18px;">
+                            <div style="font-weight:700;color:#222;">Manager (Me)</div>
+                            <div style="font-size:1.05rem;color:#444;">lhacaoth@redhat.com</div>
+                        </td>
+                        <td style="font-size:1.1rem;">Owner</td>
+                        <td style="font-size:1.1rem;">Jun 25, 2025, 11:10 PM<br><span style="font-size:0.98rem;color:#888;">Registered on Jun 25, 2025</span></td>
+                        <td>
+                            <select style="padding:8px 18px;font-size:1.1rem;border-radius:8px;border:1px solid #e0e0e0;">
+                                <option>Select</option>
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Invoice Tracking Template -->
+    <div class="container" id="invoice-tracking-template" style="display:none;max-width:600px;width:95vw;background:#fff;border:none;box-shadow:none;">
+        <div style="background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.07);padding:0 0 0 0;">
+            <!-- Notification 1 -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:24px 24px 8px 24px;border-bottom:1px solid #f0f0f0;">
+                <div style="display:flex;align-items:flex-start;gap:16px;">
+                    <span style="font-size:2rem;line-height:1;display:inline-block;margin-top:2px;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="16" rx="2" fill="#fff" stroke="#222" stroke-width="1.5"/><path d="M7 8h10M7 12h6" stroke="#222" stroke-width="1.5" stroke-linecap="round"/><circle cx="19" cy="19" r="5" fill="#fff"/><circle cx="19" cy="19" r="4.2" stroke="#14c38e" stroke-width="1.6" fill="#fff"/><path d="M17.5 19.5l1.5 1.5 2-2" stroke="#14c38e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <div>
+                        <div style="font-weight:700;font-size:1.15rem;">Invoice PDF viewed</div>
+                        <div style="color:#444;font-size:1.05rem;margin:2px 0 6px 0;">Invoice PDF INV-000236 was viewed by Bill Compton</div>
+                        <a href="#" style="color:#1976d2;font-weight:600;font-size:1.05rem;margin-right:18px;text-decoration:none;">INV-000236</a>
+                        <a href="#" style="color:#1976d2;font-weight:600;font-size:1.05rem;text-decoration:none;">Client Info</a>
+                    </div>
+                </div>
+                <div style="text-align:right;min-width:120px;">
+                    <div style="color:#222;font-size:1.08rem;font-weight:600;">seconds ago</div>
+                    <span style="font-size:1.5rem;color:#bbb;cursor:pointer;">&times;</span>
+                </div>
+            </div>
+            <!-- Notification 2 -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:24px 24px 8px 24px;border-bottom:1px solid #f0f0f0;">
+                <div style="display:flex;align-items:flex-start;gap:16px;">
+                    <span style="font-size:2rem;line-height:1;display:inline-block;margin-top:2px;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="16" rx="2" fill="#fff" stroke="#222" stroke-width="1.5"/><path d="M7 8h10M7 12h6" stroke="#222" stroke-width="1.5" stroke-linecap="round"/><circle cx="19" cy="19" r="5" fill="#fff"/><circle cx="19" cy="19" r="4.2" stroke="#14c38e" stroke-width="1.6" fill="#fff"/><path d="M17.5 19.5l1.5 1.5 2-2" stroke="#14c38e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <div>
+                        <div style="font-weight:700;font-size:1.15rem;">Invoice sent</div>
+                        <div style="color:#444;font-size:1.05rem;margin:2px 0 6px 0;">Invoice INV-000236 was delivered to Bill Compton</div>
+                        <a href="#" style="color:#1976d2;font-weight:600;font-size:1.05rem;margin-right:18px;text-decoration:none;">INV-000236</a>
+                        <a href="#" style="color:#1976d2;font-weight:600;font-size:1.05rem;text-decoration:none;">Client Info</a>
+                    </div>
+                </div>
+                <div style="text-align:right;min-width:120px;">
+                    <div style="color:#222;font-size:1.08rem;font-weight:600;">seconds ago</div>
+                    <span style="font-size:1.5rem;color:#bbb;cursor:pointer;">&times;</span>
+                </div>
+            </div>
+            <!-- Notification 3 -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:24px 24px 8px 24px;">
+                <div style="display:flex;align-items:flex-start;gap:16px;">
+                    <span style="font-size:2rem;line-height:1;display:inline-block;margin-top:2px;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="16" rx="2" fill="#fff" stroke="#222" stroke-width="1.5"/><path d="M7 8h10M7 12h6" stroke="#222" stroke-width="1.5" stroke-linecap="round"/><circle cx="19" cy="19" r="5" fill="#fff"/><circle cx="19" cy="19" r="4.2" stroke="#14c38e" stroke-width="1.6" fill="#fff"/><path d="M17.5 19.5l1.5 1.5 2-2" stroke="#14c38e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <div>
+                        <div style="font-weight:700;font-size:1.15rem;">Invoice email viewed</div>
+                        <div style="color:#444;font-size:1.05rem;margin:2px 0 6px 0;">Invoice email INV-000236 was viewed by Bill Compton</div>
+                        <a href="#" style="color:#1976d2;font-weight:600;font-size:1.05rem;margin-right:18px;text-decoration:none;">INV-000236</a>
+                        <a href="#" style="color:#1976d2;font-weight:600;font-size:1.05rem;text-decoration:none;">Client Info</a>
+                    </div>
+                </div>
+                <div style="text-align:right;min-width:120px;">
+                    <div style="color:#222;font-size:1.08rem;font-weight:600;">seconds ago</div>
+                    <span style="font-size:1.5rem;color:#bbb;cursor:pointer;">&times;</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+// --- Prototype functions ---
+function generateEstimate() {
+    console.log('Generate Estimate (prototype)');
+}
+function sendEstimate() {
+    console.log('Send Estimate (prototype)');
+}
+function approveEstimate() {
+    console.log('Approve Estimate (prototype)');
+}
+function addLineItem() {
+    console.log('Add Line Item (prototype)');
+}
+function generateInvoice() {
+    console.log('Generate Invoice (prototype)');
+}
+function sendInvoice() {
+    console.log('Send Invoice (prototype)');
+}
+// --- Toggle logic ---
+const navInvoices = document.getElementById('nav-invoices');
+const navEstimates = document.getElementById('nav-estimates');
+const navClients = document.getElementById('nav-clients');
+const navItems = document.getElementById('nav-items');
+const navExpenses = document.getElementById('nav-expenses');
+const navTeam = document.getElementById('nav-team');
+const navInvoiceTracking = document.getElementById('nav-invoice-tracking');
+const estimateTemplate = document.getElementById('estimate-template');
+const invoiceTemplate = document.getElementById('invoice-template');
+const clientsTemplate = document.getElementById('clients-template');
+const itemsTemplate = document.getElementById('items-template');
+const expensesTemplate = document.getElementById('expenses-template');
+const teamTemplate = document.getElementById('team-template');
+const dashboardTemplate = document.getElementById('dashboard-template');
+const invoiceTrackingTemplate = document.getElementById('invoice-tracking-template');
+// Always show dashboard
+if (dashboardTemplate) dashboardTemplate.style.display = '';
+navInvoices.addEventListener('click', function() {
+    navInvoices.classList.add('active');
+    navEstimates.classList.remove('active');
+    navClients.classList.remove('active');
+    navItems.classList.remove('active');
+    navExpenses.classList.remove('active');
+    navTeam.classList.remove('active');
+    navInvoiceTracking.classList.remove('active');
+    estimateTemplate.style.display = 'none';
+    invoiceTemplate.style.display = '';
+    clientsTemplate.style.display = 'none';
+    itemsTemplate.style.display = 'none';
+    expensesTemplate.style.display = 'none';
+    teamTemplate.style.display = 'none';
+    invoiceTrackingTemplate.style.display = 'none';
+});
+navEstimates.addEventListener('click', function() {
+    navEstimates.classList.add('active');
+    navInvoices.classList.remove('active');
+    navClients.classList.remove('active');
+    navItems.classList.remove('active');
+    navExpenses.classList.remove('active');
+    navTeam.classList.remove('active');
+    navInvoiceTracking.classList.remove('active');
+    estimateTemplate.style.display = '';
+    invoiceTemplate.style.display = 'none';
+    clientsTemplate.style.display = 'none';
+    itemsTemplate.style.display = 'none';
+    expensesTemplate.style.display = 'none';
+    teamTemplate.style.display = 'none';
+    invoiceTrackingTemplate.style.display = 'none';
+});
+navClients.addEventListener('click', function() {
+    navClients.classList.add('active');
+    navInvoices.classList.remove('active');
+    navEstimates.classList.remove('active');
+    navItems.classList.remove('active');
+    navExpenses.classList.remove('active');
+    navTeam.classList.remove('active');
+    navInvoiceTracking.classList.remove('active');
+    estimateTemplate.style.display = 'none';
+    invoiceTemplate.style.display = 'none';
+    clientsTemplate.style.display = '';
+    itemsTemplate.style.display = 'none';
+    expensesTemplate.style.display = 'none';
+    teamTemplate.style.display = 'none';
+    invoiceTrackingTemplate.style.display = 'none';
+});
+navItems.addEventListener('click', function() {
+    navItems.classList.add('active');
+    navClients.classList.remove('active');
+    navInvoices.classList.remove('active');
+    navEstimates.classList.remove('active');
+    navExpenses.classList.remove('active');
+    navTeam.classList.remove('active');
+    navInvoiceTracking.classList.remove('active');
+    estimateTemplate.style.display = 'none';
+    invoiceTemplate.style.display = 'none';
+    clientsTemplate.style.display = 'none';
+    itemsTemplate.style.display = '';
+    expensesTemplate.style.display = 'none';
+    teamTemplate.style.display = 'none';
+    invoiceTrackingTemplate.style.display = 'none';
+});
+navExpenses.addEventListener('click', function() {
+    navExpenses.classList.add('active');
+    navItems.classList.remove('active');
+    navClients.classList.remove('active');
+    navInvoices.classList.remove('active');
+    navEstimates.classList.remove('active');
+    navTeam.classList.remove('active');
+    navInvoiceTracking.classList.remove('active');
+    estimateTemplate.style.display = 'none';
+    invoiceTemplate.style.display = 'none';
+    clientsTemplate.style.display = 'none';
+    itemsTemplate.style.display = 'none';
+    expensesTemplate.style.display = '';
+    teamTemplate.style.display = 'none';
+    invoiceTrackingTemplate.style.display = 'none';
+});
+navTeam.addEventListener('click', function() {
+    navTeam.classList.add('active');
+    navExpenses.classList.remove('active');
+    navItems.classList.remove('active');
+    navClients.classList.remove('active');
+    navInvoices.classList.remove('active');
+    navEstimates.classList.remove('active');
+    navInvoiceTracking.classList.remove('active');
+    estimateTemplate.style.display = 'none';
+    invoiceTemplate.style.display = 'none';
+    clientsTemplate.style.display = 'none';
+    itemsTemplate.style.display = 'none';
+    expensesTemplate.style.display = 'none';
+    teamTemplate.style.display = '';
+    invoiceTrackingTemplate.style.display = 'none';
+});
+navInvoiceTracking.addEventListener('click', function() {
+    navInvoiceTracking.classList.add('active');
+    navTeam.classList.remove('active');
+    navExpenses.classList.remove('active');
+    navItems.classList.remove('active');
+    navClients.classList.remove('active');
+    navInvoices.classList.remove('active');
+    navEstimates.classList.remove('active');
+    estimateTemplate.style.display = 'none';
+    invoiceTemplate.style.display = 'none';
+    clientsTemplate.style.display = 'none';
+    itemsTemplate.style.display = 'none';
+    expensesTemplate.style.display = 'none';
+    teamTemplate.style.display = 'none';
+    invoiceTrackingTemplate.style.display = '';
+});
+</script>
+</body>
+</html>
